@@ -29,21 +29,31 @@ var User = mongoose.model('User', {
     password: String
 });
 
-// Get all user with email and password.
-app.get('/api/users', function (req, res) {
+var Session = mongoose.model('Session', {
+    name: String,
+    gameMaster: String,
+    players:  [String],
+    chat: [{
+        user: String,
+        message: String
+    }]
+});
 
-    console.log("Listing users...");
-    //use mongoose to get all user in the database
-    User.findOne({ email: req.params.email, password: req.params.password }, function (err, user) {
+// Get all sessions.
+app.get('/api/sessions', function (req, res) {
+
+    console.log("Listing sessions...");
+    //use mongoose to get all sessions in the database
+    Session.find({}, function (err, sessions) {
         if (err) {
             res.send(err);
         }
 
-        res.json(user);
+        res.json(sessions);
     });
 });
 
-// Create a user Item
+// Create a user 
 app.post('/api/users', function (req, res) {
 
     console.log("Creating user...");
@@ -51,6 +61,25 @@ app.post('/api/users', function (req, res) {
     User.create({
         email: req.body.email,
         password: req.body.password,
+        done: false
+    }, function (err, raw) {
+        if (err) {
+            res.send(err);
+        }
+        res.send(raw);
+    });
+});
+
+// Create a session
+app.post('/api/sessions', function (req, res) {
+
+    console.log("Creating session...");
+
+    Session.create({
+        name: req.body.name,
+        gameMaster: req.body.gameMaster,
+        players: [],
+        chat: [],
         done: false
     }, function (err, raw) {
         if (err) {
@@ -75,6 +104,33 @@ app.put('/api/users/:id', function (req, res) {
     });
 });
 
+// Update a session
+app.put('/api/sessions/players/:id', function (req, res) {
+    const session = {
+        players: req.body.players
+    };
+    console.log("Updating session - ", req.params.id);
+    Session.update({_id: req.params.id}, session, function (err, raw) {
+        if (err) {
+            res.send(err);
+        }
+        res.send(raw);
+    });
+});
+
+// Update a session
+app.put('/api/sessions/chat/:id', function (req, res) {
+    const session = {
+        chat: req.body.chat
+    };
+    console.log("Updating session - ", req.params.id);
+    Session.update({_id: req.params.id}, session, function (err, raw) {
+        if (err) {
+            res.send(err);
+        }
+        res.send(raw);
+    });
+});
 
 // Delete a user
 // app.delete('/api/groceries/:id', function (req, res) {
